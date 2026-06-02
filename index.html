@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Laboratory - HCF & LCM</title>
+    <style>
+        :root {
+            --primary: #27ae60;
+            --secondary: #95a5a6;
+            --hcf-color: #4a90e2;
+            --lcm-color: #e67e22;
+            --bg: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #mode-selector {
+            text-align: center; margin-bottom: 30px; background: white;
+            padding: 20px 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .mode-btn {
+            padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border: none;
+            border-radius: 10px; cursor: pointer; margin: 0 10px; transition: 0.3s; color: white;
+        }
+
+        #btn-hcf { background-color: var(--hcf-color); }
+        #btn-lcm { background-color: var(--lcm-color); }
+        .mode-btn.active { outline: 4px solid #333; }
+
+        .app-container { display: none; width: 100%; max-width: 900px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        .inventory-header {
+            display: flex; justify-content: center; gap: 40px; background: #fff9c4;
+            padding: 20px; border-radius: 15px; margin-bottom: 25px; font-size: 1.3rem; border: 2px solid #f9e79f;
+        }
+
+        .step-container { border: 1px solid #e0e0e0; border-radius: 15px; padding: 20px; background: #fff; margin-bottom: 20px; }
+        .input-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0; font-size: 1.1rem; }
+        input[type="number"] { width: 80px; padding: 8px; border: 2px solid #ced4da; border-radius: 8px; text-align: center; font-size: 1.1rem; }
+        
+        button.action-btn { padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-alt { background: var(--secondary); color: white; }
+
+        .alert { padding: 15px; border-radius: 10px; margin: 20px 0; font-weight: bold; display: none; border-left: 5px solid; line-height: 1.8; }
+        .alert-warning { background: #fff3cd; color: #856404; border-color: #ffeeba; }
+        .alert-success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+
+        /* HCF Visuals */
+        #visualizer { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 30px; }
+        .bag { width: 140px; min-height: 180px; background: #fff; border: 2px solid #ffeeba; border-radius: 15px; padding: 10px; display: flex; flex-wrap: wrap; align-content: flex-start; position: relative; }
+        .bag::after { content: "Bag"; position: absolute; bottom: -22px; width: 100%; text-align: center; font-size: 0.8rem; color: #888; }
+        .item { font-size: 1.4rem; margin: 2px; animation: pop 0.3s ease-out; }
+
+        /* LCM Visuals - Height based on 2px per item */
+        .lcm-visual-container { display: flex; justify-content: space-around; padding: 40px 20px; background: #fafafa; border-radius: 15px; border: 2px dashed #ccc; }
+        .lcm-column { width: 45%; display: flex; flex-direction: column; align-items: center; }
+        .bag-stack { display: flex; flex-direction: column-reverse; width: 100%; min-height: 300px; border-bottom: 4px solid #333; background: white; margin: 10px 0; align-items: center; }
+        .lcm-bag-item { width: 80%; border-radius: 10px; border: 2px solid; font-weight: bold; text-align: center; margin: 1px 0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: 0.3s; }
+        
+        /* Proportional Heights */
+        .choc-bag { height: 40px; background: #efebe9; border-color: #795548; color: #5d4037; } /* 20 items * 2px */
+        .lolli-bag { height: 48px; background: #fce4ec; border-color: #e91e63; color: #c2185b; } /* 24 items * 2px */
+        
+        .total-display { font-size: 1.6rem; font-weight: bold; margin-top: 15px; border-top: 2px solid #eee; width: 100%; text-align: center; padding-top: 10px; }
+        
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="mode-selector">
+        <h2>Practice Laboratory</h2>
+        <button id="btn-hcf" class="mode-btn" onclick="switchMode('hcf')">HCF (Equal Distribution)</button>
+        <button id="btn-lcm" class="mode-btn" onclick="switchMode('lcm')">LCM (Same Total)</button>
+    </div>
+
+    <!-- HCF SECTION (REMAINS UNCHANGED) -->
+    <div id="hcf-app" class="app-container">
+        <div class="card">
+            <div class="inventory-header">
+                <span>🍫 <strong>20</strong> Chocolates Total</span>
+                <span>🍭 <strong>24</strong> Lollipops Total</span>
+            </div>
+            <div id="step1" class="step-container">
+                <h3>Choose Number of Bags</h3>
+                <div class="input-row">
+                    <span>How many guests (bags)?</span>
+                    <input type="number" id="bagCount" value="2">
+                    <button class="action-btn btn-main" onclick="initStep2()">Set Bag Count</button>
+                </div>
+            </div>
+            <div id="step2" class="step-container" style="display:none;">
+                <h3>How will you pack <span id="displayBags"></span> bags?</h3>
+                <div class="input-row">
+                    <span>🍫 Per bag:</span> <input type="number" id="inChoc" value="0">
+                    <span>🍫 Remainder:</span> <input type="number" id="remChoc" value="0">
+                </div>
+                <div class="input-row">
+                    <span>🍭 Per bag:</span> <input type="number" id="inLolli" value="0">
+                    <span>🍭 Remainder:</span> <input type="number" id="remLolli" value="0">
+                </div>
+                <div class="input-row">
+                    <button class="action-btn btn-main" onclick="runTrial()">Pack and Test!</button>
+                    <button class="action-btn btn-alt" onclick="resetApp()">Change Bag Count</button>
+                </div>
+            </div>
+            <div id="statusMsg" class="alert"></div>
+            <div id="visual-wrapper" style="border: 2px dashed #ccc; padding: 20px; border-radius: 20px;">
+                <div id="visualizer"></div>
+                <div id="remainder-bin" style="border-top:1px solid #eee; padding-top:10px;">
+                    <strong>🚩 Remainder Bin:</strong> <div id="bin-items"></div>
+                </div>
+            </div>
+            <table id="log"><thead><tr><th>Bags</th><th>Choc (Rem)</th><th>Lolli (Rem)</th><th>Result</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+
+    <!-- LCM SECTION -->
+    <div id="lcm-app" class="app-container">
+        <div class="card">
+            <div class="inventory-header">
+                <span>🛍️ Choc Bag: <strong>20</strong> items</span>
+                <span>🛍️ Lolli Bag: <strong>24</strong> items</span>
+            </div>
+            <div class="step-container">
+                <h3>Buy bags to get the SAME number of each item</h3>
+                <div class="input-row">
+                    <span>🍫 Choc Bags:</span> <input type="number" id="lcmCB" value="1" min="1">
+                    <span>Total 🍫?</span> <input type="number" id="lcmCG" value="0">
+                </div>
+                <div class="input-row">
+                    <span>🍭 Lolli Bags:</span> <input type="number" id="lcmLB" value="1" min="1">
+                    <span>Total 🍭?</span> <input type="number" id="lcmLG" value="0">
+                </div>
+                <div class="input-row">
+                    <button class="action-btn btn-main" onclick="runLcmTrial()">Stack and Test!</button>
+                </div>
+            </div>
+            <div id="lcmStatus" class="alert"></div>
+            <div class="lcm-visual-container">
+                <div class="lcm-column">
+                    <strong>Chocolates</strong>
+                    <div id="chocStack" class="bag-stack"></div>
+                    <div id="chocTotalDisp" class="total-display">Total: 0</div>
+                </div>
+                <div class="lcm-column">
+                    <strong>Lollipops</strong>
+                    <div id="lolliStack" class="bag-stack"></div>
+                    <div id="lolliTotalDisp" class="total-display">Total: 0</div>
+                </div>
+            </div>
+            <table id="lcmLog"><thead><tr><th>Choc Bags</th><th>Lolli Bags</th><th>Actual Chocs</th><th>Actual Lollies</th><th>Result</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+
+<script>
+    function switchMode(m) {
+        document.getElementById('hcf-app').style.display = m==='hcf'?'block':'none';
+        document.getElementById('lcm-app').style.display = m==='lcm'?'block':'none';
+        document.getElementById('btn-hcf').classList.toggle('active', m==='hcf');
+        document.getElementById('btn-lcm').classList.toggle('active', m==='lcm');
+    }
+
+    // --- LCM LOGIC ---
+    async function runLcmTrial() {
+        const cb = parseInt(document.getElementById('lcmCB').value) || 0;
+        const lb = parseInt(document.getElementById('lcmLB').value) || 0;
+        const guessC = parseInt(document.getElementById('lcmCG').value);
+        const guessL = parseInt(document.getElementById('lcmLG').value);
+
+        const cStack = document.getElementById('chocStack');
+        const lStack = document.getElementById('lolliStack');
+        const status = document.getElementById('lcmStatus');
+        
+        cStack.innerHTML = ""; lStack.innerHTML = ""; 
+        status.style.display = 'none';
+
+        let actualC = cb * 20;
+        let actualL = lb * 24;
+        const maxBags = Math.max(cb, lb);
+
+        // Visual Animation
+        for(let i=0; i<maxBags; i++) {
+            if(i < cb) {
+                const b = document.createElement('div'); b.className = 'lcm-bag-item choc-bag';
+                b.innerHTML = "🍫 20"; cStack.appendChild(b);
+                document.getElementById('chocTotalDisp').innerText = `Total: ${(i+1)*20}`;
+            }
+            if(i < lb) {
+                const b = document.createElement('div'); b.className = 'lcm-bag-item lolli-bag';
+                b.innerHTML = "🍭 24"; lStack.appendChild(b);
+                document.getElementById('lolliTotalDisp').innerText = `Total: ${(i+1)*24}`;
+            }
+            await sleep(200);
+        }
+
+        status.style.display = 'block';
+        let feedback = [];
+        let isCorrectMult = (guessC === actualC && guessL === actualL);
+
+        if (!isCorrectMult) {
+            status.className = "alert alert-warning";
+            feedback.push("⚠️ Check your multiplication! Total items = Number of bags × Items in each bag.");
+        } else if (actualC === actualL) {
+            status.className = "alert alert-success";
+            feedback.push(`🌟 SUCCESS! You have exactly ${actualC} of each item and your math is correct!`);
+        } else {
+            status.className = "alert alert-warning";
+            feedback.push("The item counts are not equal yet. Keep stacking bags!");
+        }
+
+        status.innerHTML = feedback.join("<br>");
+        const row = document.getElementById('lcmLog').querySelector('tbody').insertRow(0);
+        row.innerHTML = `<td>${cb}</td><td>${lb}</td><td>${actualC}</td><td>${actualL}</td><td>${(actualC===actualL && isCorrectMult)?'✅ Success':'❌ Try Again'}</td>`;
+    }
+
+    // --- HCF LOGIC (Original) ---
+    let numBags = 0;
+    function initStep2() {
+        numBags = parseInt(document.getElementById('bagCount').value);
+        document.getElementById('displayBags').innerText = numBags;
+        document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display='block';
+        resetVisuals();
+    }
+    function resetVisuals() {
+        document.getElementById('visualizer').innerHTML = ""; document.getElementById('bin-items').innerHTML = "";
+        for(let i=0; i<numBags; i++) {
+            const b = document.createElement('div'); b.className='bag'; b.id=`bag-${i}`; document.getElementById('visualizer').appendChild(b);
+        }
+    }
+    async function runTrial() {
+        const cp = parseInt(document.getElementById('inChoc').value) || 0; const lp = parseInt(document.getElementById('inLolli').value) || 0;
+        resetVisuals(); const status = document.getElementById('statusMsg'); status.style.display='none';
+        let rc = 20, rl = 24, cro = false, lro = false;
+        for(let b=0; b<numBags; b++) for(let i=0; i<cp; i++) { if(rc>0) { addItem(`bag-${b}`, '🍫'); rc--; await sleep(30); } else cro=true; }
+        for(let b=0; b<numBags; b++) for(let i=0; i<lp; i++) { if(rl>0) { addItem(`bag-${b}`, '🍭'); rl--; await sleep(30); } else lro=true; }
+        for(let i=0; i<rc; i++) addItem('bin-items', '🍫'); for(let i=0; i<rl; i++) addItem('bin-items', '🍭');
+        status.style.display='block'; let f = [];
+        if(cro) f.push("⚠️ Ran out of 🍫! Try putting fewer 🍫 in each bag.");
+        if(lro) f.push("⚠️ Ran out of 🍭! Try putting fewer 🍭 in each bag.");
+        if(!cro && rc>0) f.push(`Still have ${rc} 🍫 in bin. Try putting more 🍫 in each bag.`);
+        if(!lro && rl>0) f.push(`Still have ${rl} 🍭 in bin. Try putting more 🍭 in each bag.`);
+        if(!cro && !lro && rc===0 && rl===0) { status.className="alert alert-success"; f=["🌟 PERFECT! Everything distributed equally."]; } 
+        else status.className="alert alert-warning";
+        status.innerHTML = f.join("<br>");
+        const row = document.getElementById('log').querySelector('tbody').insertRow(0);
+        row.innerHTML = `<td>${numBags}</td><td>${cp}(${rc})</td><td>${lp}(${rl})</td><td>${rc===0 && rl===0?'✅':'❌'}</td>`;
+    }
+    function addItem(id, e) { const s=document.createElement('span'); s.className='item'; s.innerText=e; document.getElementById(id).appendChild(s); }
+    function resetApp() { document.getElementById('step1').style.display='block'; document.getElementById('step2').style.display='none'; document.getElementById('statusMsg').style.display='none'; resetVisuals(); }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
